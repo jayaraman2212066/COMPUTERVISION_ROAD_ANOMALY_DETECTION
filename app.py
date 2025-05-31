@@ -10,18 +10,24 @@ from ultralytics import YOLO
 import threading
 from queue import Queue
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 socketio = SocketIO(
     app,
-    cors_allowed_origins='*',
-    async_mode='threading',  # Use threading for Render
+    cors_allowed_origins=['*'],
+    async_mode='threading',
     ping_timeout=60,
     ping_interval=25,
-    max_http_buffer_size=1e8
+    max_http_buffer_size=1e8,
+    transports=['websocket', 'polling'],
+    allow_upgrades=True,
+    path='/socket.io/'
 )
 
-UPLOAD_FOLDER = 'static/uploads'
+# Ensure static directories exist
+UPLOAD_FOLDER = os.path.join('static', 'uploads')
+STATIC_FOLDER = os.path.join('static', 'css')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(STATIC_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Load YOLOv8 model with optimizations
