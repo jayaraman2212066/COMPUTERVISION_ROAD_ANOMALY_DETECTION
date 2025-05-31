@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Road Anomaly Detection Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <h2>RoadGuard</h2>
+            </div>
+            <nav>
+                <ul>
+                    <li class="active"><a href="#upload-section">📦 Video Upload</a></li>
+                    <li><a href="#arduino-section">📷 Arduino Feed</a></li>
+                    <li><a href="#analytics-section">📊 Analytics</a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <header>
+                <h1>Road Anomaly Detection Dashboard</h1>
+                <div class="header-stats">
+                    <div class="stat-card">
+                        <span class="stat-value" id="totalDetections">0</span>
+                        <span class="stat-label">Total Detections</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="currentFPS">0</span>
+                        <span class="stat-label">Current FPS</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Upload Section -->
+            <section id="upload-section" class="dashboard-section">
+                <div class="section-header">
+                    <h2>📦 Video Upload & Detection</h2>
+                    <div class="upload-controls">
+                        <input type="file" id="videoInput" accept="video/*" class="file-input">
+                        <button id="uploadBtn" class="primary-button">Upload & Detect</button>
+                    </div>
+                    <div class="fps-controls" style="margin-top:10px;">
+                        <input type="number" id="desiredFPS" min="1" max="60" value="30" style="width: 60px;">
+                        <button id="setFPSBtn" class="primary-button">Set FPS</button>
+                    </div>
+                </div>
+                <div class="video-grid">
+                    <div class="video-card">
+                        <h3>Original Video</h3>
+                        <div class="video-container">
+                            <video id="originalVideo" controls autoplay muted></video>
+                        </div>
+                    </div>
+                    <div class="video-card">
+                        <h3>Detection Results</h3>
+                        <div class="video-container">
+                            <img id="processedImage" src="" alt="Detection Results">
+                        </div>
+                    </div>
+                </div>
+                <div id="uploadStatus" class="status-message"></div>
+            </section>
+
+            <!-- Arduino Section -->
+            <section id="arduino-section" class="dashboard-section">
+                <div class="section-header">
+                    <h2>📷 Arduino Real-Time Detection</h2>
+                    <button id="arduinoBtn" class="primary-button">
+                        Start Arduino Feed
+                    </button>
+                </div>
+                <div class="arduino-grid">
+                    <div class="video-card">
+                        <h3>Live Feed</h3>
+                        <div class="video-container">
+                            <img id="liveOriginal" src="" alt="Live Feed">
+                        </div>
+                    </div>
+                    <div class="video-card">
+                        <h3>Detection Results</h3>
+                        <div class="video-container">
+                            <img id="liveDetection" src="" alt="Live Detection">
+                        </div>
+                    </div>
+                </div>
+                <div id="arduino-status" class="status-message"></div>
+            </section>
+
+            <!-- Analytics Section -->
+            <section id="analytics-section" class="dashboard-section">
+                <div class="section-header">
+                    <h2>📊 Detection Analytics</h2>
+                </div>
+                <div class="analytics-grid">
+                    <div class="chart-card">
+                        <h3>Detection Confidence</h3>
+                        <canvas id="confidenceChart"></canvas>
+                    </div>
+                    <div class="log-card">
+                        <h3>Detection Log</h3>
+                        <div id="detectionLog" class="log-container"></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
