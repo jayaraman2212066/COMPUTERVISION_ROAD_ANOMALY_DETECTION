@@ -38,7 +38,7 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
 # Load YOLOv8 model with optimizations
 try:
-    model_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'yolov8n_speedbump_optimized42/weights/best.pt')
+    model_path = 'yolov8n_speedbump_optimized42/weights/best.pt'
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model file not found at {model_path}")
     
@@ -245,4 +245,5 @@ def set_fps():
         return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
-    socketio.run(app, host='127.0.0.1', port=9000, debug=False)
+    # Removed socketio.run as Gunicorn is used for deployment
+    pass
