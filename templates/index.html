@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Road Anomaly Detection Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/Style.css') }}">
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script>
@@ -23,6 +23,14 @@
     </script>
 </head>
 <body>
+    <!-- Background Slideshow -->
+    <div class="background-slideshow">
+        <img src="{{ url_for('static', filename='backgrounds/demographic-census-concept-representation.jpg') }}" alt="Background 1">
+        <img src="{{ url_for('static', filename='backgrounds/istockphoto-450436691-1024x1024.jpg') }}" alt="Background 2">
+        <img src="{{ url_for('static', filename='backgrounds/istockphoto-1127653823-1024x1024.jpg') }}" alt="Background 3">
+        <img src="{{ url_for('static', filename='backgrounds/mohd-afiq-TcSweD8mGN0-unsplash.jpg') }}" alt="Background 4">
+    </div>
+
     <div class="dashboard">
         <!-- Sidebar -->
         <div class="sidebar">

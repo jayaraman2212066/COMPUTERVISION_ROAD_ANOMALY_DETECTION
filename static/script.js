@@ -88,6 +88,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Set up socket event handlers
     setupSocketHandlers();
+
+    // Background Slideshow
+    const backgroundImages = document.querySelectorAll('.background-slideshow img');
+    let currentImageIndex = 0;
+    const slideInterval = 5000; // Change image every 5 seconds
+
+    // Set initial active image
+    backgroundImages[0].classList.add('active');
+
+    // Function to change background image
+    function changeBackground() {
+        backgroundImages[currentImageIndex].classList.remove('active');
+        currentImageIndex = (currentImageIndex + 1) % backgroundImages.length;
+        backgroundImages[currentImageIndex].classList.add('active');
+    }
+
+    // Start slideshow
+    setInterval(changeBackground, slideInterval);
 });
 
 // Socket event handlers setup

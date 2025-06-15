@@ -7,14 +7,42 @@
 
 body {
     font-family: 'Roboto', sans-serif;
-    background: url('img/night-7530755.jpg') no-repeat center center fixed;
-    background-size: cover;
     color: #ffffff;
     line-height: 1.6;
     position: relative;
     min-height: 100vh;
+    overflow-x: hidden;
 }
 
+/* Background Slideshow */
+.background-slideshow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    overflow: hidden;
+}
+
+.background-slideshow img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 1.5s ease-in-out;
+    transform: scale(1.1);
+}
+
+.background-slideshow img.active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Overlay */
 body::before {
     content: '';
     position: fixed;
@@ -22,8 +50,9 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6));
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4));
     z-index: -1;
+    backdrop-filter: blur(2px);
 }
 
 /* Dashboard Layout */
@@ -146,12 +175,12 @@ header h1 {
 /* Section Styles */
 .dashboard-section {
     background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     border-radius: 15px;
     padding: 25px;
     margin-bottom: 20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .section-header {
@@ -178,10 +207,11 @@ header h1 {
 
 .video-card {
     background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     border-radius: 12px;
     padding: 20px;
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.3s;
 }
 
@@ -284,27 +314,35 @@ header h1 {
 
 /* Log Container Styles */
 .log-container {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 20px;
+    background: rgba(0, 0, 0, 0.3);
     border-radius: 12px;
-    height: 300px;
+    padding: 15px;
+    max-height: 300px;
     overflow-y: auto;
-    backdrop-filter: blur(12px);
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(5px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .log-container::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
 }
 
 .log-container::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
 }
 
 .log-container::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
+    border-radius: 3px;
+}
+
+.log-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
 }
 
 /* Status Message Styles */
