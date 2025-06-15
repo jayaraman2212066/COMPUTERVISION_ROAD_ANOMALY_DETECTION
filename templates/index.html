@@ -4,10 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Road Anomaly Detection Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/Style.css') }}">
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script>
+        // Global error handler for Socket.IO
+        window.addEventListener('error', function(e) {
+            if (e.message.includes('socket.io') || e.message.includes('websocket')) {
+                console.error('Socket.IO error:', e);
+                const statusElement = document.getElementById('uploadStatus');
+                if (statusElement) {
+                    statusElement.innerText = 'Connection error. Please refresh the page.';
+                    statusElement.className = 'status-message error';
+                }
+            }
+        });
+    </script>
 </head>
 <body>
     <div class="dashboard">

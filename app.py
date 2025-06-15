@@ -3,25 +3,30 @@ import cv2
 import torch
 import time
 import numpy as np
+import logging
 from flask import Flask, render_template, Response, request, jsonify, send_file
 from flask_socketio import SocketIO
 from werkzeug.utils import secure_filename
 from ultralytics import YOLO
 import threading
 from queue import Queue
+import eventlet
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Use eventlet for better WebSocket support
+eventlet.monkey_patch()
 
 app = Flask(__name__, static_folder='static', static_url_path='/static')
-socketio = SocketIO(
-    app,
-    cors_allowed_origins=['*'],
-    async_mode='threading',
-    ping_timeout=60,
-    ping_interval=25,
-    max_http_buffer_size=1e8,
-    transports=['websocket', 'polling'],
-    allow_upgrades=True,
-    path='/socket.io/'
-)
+socketio = SocketIO(app, 
+                   cors_allowed_origins="*", 
+                   async_mode='eventlet',
+                   logger=True,
+                   engineio_logger=True,
+                   ping_timeout=60,
+                   ping_interval=25)
 
 # Ensure static directories exist
 UPLOAD_FOLDER = os.path.join('static', 'uploads')
@@ -29,15 +34,20 @@ STATIC_FOLDER = os.path.join('static', 'css')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(STATIC_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
 # Load YOLOv8 model with optimizations
 try:
-    model_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'best.pt')
+    model_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'yolov8n_speedbump_optimized42/weights/best.pt')
+    if not os.path.exists(model_path):
+        raise FileNotFoundError(f"Model file not found at {model_path}")
+    
     model_yolo = YOLO(model_path)
     model_yolo.fuse()  # Fuse Conv2d + BatchNorm2d layers
     torch.set_num_threads(4)  # Limit CPU threads for better performance
+    logger.info("Model loaded successfully")
 except Exception as e:
-    print(f"Error loading model: {e}")
+    logger.error(f"Error loading model: {e}")
     model_yolo = None
 
 classes = ['pothole', 'crack', 'speed bump']
@@ -52,34 +62,46 @@ def emit_socket_event(event, data):
     try:
         socketio.emit(event, data, namespace='/')
     except Exception as e:
-        print(f"Socket emit error: {e}")
+        logger.error(f"Socket emit error: {e}")
 
 def process_frames():
     while True:
-        if not frame_queue.empty():
-            frame = frame_queue.get()
-            if frame is None:
-                break
+        try:
+            if not frame_queue.empty():
+                frame = frame_queue.get()
+                if frame is None:
+                    break
 
-            # Resize frame for faster processing
-            resized_frame = cv2.resize(frame, (416, 416))
-            frame_rgb = cv2.cvtColor(resized_frame, cv2.COLOR_BGR2RGB)
+                # Resize frame for faster processing
+                resized_frame = cv2.resize(frame, (416, 416))
+                frame_rgb = cv2.cvtColor(resized_frame, cv2.COLOR_BGR2RGB)
 
-            # Optimized YOLOv8 inference
-            results = model_yolo.predict(
-                source=frame_rgb,
-                imgsz=416,
-                conf=0.3,
-                device='cpu',
-                verbose=False,
-                half=True
-            )
+                # Optimized YOLOv8 inference
+                results = model_yolo.predict(
+                    source=frame_rgb,
+                    imgsz=416,
+                    conf=0.3,
+                    device='cpu',
+                    verbose=False,
+                    half=True
+                )
 
-            processed_queue.put((resized_frame, results[0]))
-        time.sleep(0.001)  # Use time.sleep instead of eventlet.sleep
+                processed_queue.put((resized_frame, results[0]))
+            time.sleep(0.001)
+        except Exception as e:
+            logger.error(f"Error in process_frames: {e}")
+            continue
 
 def generate_frames(video_path):
+    if not os.path.exists(video_path):
+        logger.error(f"Video file not found: {video_path}")
+        return
+
     cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        logger.error(f"Failed to open video file: {video_path}")
+        return
+
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
@@ -166,7 +188,7 @@ def generate_frames(video_path):
             time.sleep(1.0 / desired_fps)
 
     except Exception as e:
-        print(f"Error in generate_frames: {e}")
+        logger.error(f"Error in generate_frames: {e}")
     finally:
         # Cleanup
         frame_queue.put(None)
@@ -179,52 +201,48 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload():
-    if 'video' not in request.files:
-        return 'No file part', 400
-    file = request.files['video']
-    if file.filename == '':
-        return 'No selected file', 400
+    try:
+        if 'video' not in request.files:
+            return jsonify({'error': 'No file part'}), 400
+        
+        file = request.files['video']
+        if file.filename == '':
+            return jsonify({'error': 'No selected file'}), 400
 
-    filename = secure_filename(file.filename)
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    file.save(filepath)
-    app.config['CURRENT_VIDEO_PATH'] = filepath
+        if not file.filename.lower().endswith(('.mp4', '.avi', '.mov')):
+            return jsonify({'error': 'Invalid file format'}), 400
 
-    return jsonify({
-        'message': 'Upload successful',
-        'original_path': f"/static/uploads/{filename}",
-        'detected_path': "/video_feed"
-    })
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        app.config['CURRENT_VIDEO_PATH'] = filepath
+
+        return jsonify({
+            'message': 'Upload successful',
+            'original_path': f"/static/uploads/{filename}",
+            'detected_path': "/video_feed"
+        })
+    except Exception as e:
+        logger.error(f"Upload error: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/video_feed')
 def video_feed():
     video_path = app.config.get('CURRENT_VIDEO_PATH')
+    if not video_path or not os.path.exists(video_path):
+        return jsonify({'error': 'No video file available'}), 400
     return Response(generate_frames(video_path), mimetype='multipart/x-mixed-replace; boundary=frame')
-
-@app.route('/capture-arduino')
-def capture_arduino():
-    from arduino_stream.read_serial import read_image_from_arduino
-    success = read_image_from_arduino()
-    if success:
-        return send_file('static/uploads/frame.jpg', mimetype='image/jpeg')
-    else:
-        return "Failed to capture from Arduino", 500
 
 @app.route('/set_fps', methods=['POST'])
 def set_fps():
-    global desired_fps
-    data = request.get_json()
-    fps = data.get('fps')
-    if isinstance(fps, int) and fps > 0:
-        desired_fps = fps
-        return jsonify({'success': True, 'fps': desired_fps})
-    return jsonify({'success': False, 'error': 'Invalid FPS'}), 400
+    try:
+        data = request.get_json()
+        global desired_fps
+        desired_fps = int(data.get('fps', 30))
+        return jsonify({'message': f'FPS set to {desired_fps}'})
+    except Exception as e:
+        logger.error(f"Error setting FPS: {e}")
+        return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
-    # Ensure required directories exist
-    os.makedirs('static/uploads', exist_ok=True)
-    os.makedirs('templates', exist_ok=True)
-    
-    port = int(os.environ.get('PORT', 9000))  # Changed from 8080 to 9000
-    host = '127.0.0.1'  # Changed from 0.0.0.0 to localhost
-    socketio.run(app, host=host, port=port, debug=False)
+    socketio.run(app, host='127.0.0.1', port=9000, debug=False)

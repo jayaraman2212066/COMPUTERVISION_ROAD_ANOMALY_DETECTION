@@ -34,19 +34,15 @@ ENV/
 # Project specific
 static/uploads/*
 !static/uploads/.gitkeep
-processed/
-processed_frames/
-runs/
 *.pt
 *.pth
 *.weights
-*.jpg
-*.jpeg
-*.png
-*.gif
-*.mp4
-*.avi
-*.mov
+*.onnx
+*.engine
+
+# Logs
+*.log
+logs/
 
 # Documentation
 *.docx

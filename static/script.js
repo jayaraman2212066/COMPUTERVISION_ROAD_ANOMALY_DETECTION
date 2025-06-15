@@ -4,40 +4,47 @@ let confidenceChart;
 
 // Initialize everything when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize socket
+    // Initialize socket with more robust configuration
     socket = io({
         reconnection: true,
-        reconnectionAttempts: 5,
+        reconnectionAttempts: Infinity,
         reconnectionDelay: 1000,
         reconnectionDelayMax: 5000,
-        timeout: 20000
+        timeout: 20000,
+        transports: ['polling', 'websocket'],
+        path: '/socket.io/',
+        forceNew: true,
+        autoConnect: true,
+        upgrade: true,
+        rememberUpgrade: true,
+        rejectUnauthorized: false
     });
 
     // Initialize chart
     const ctx = document.getElementById("confidenceChart")?.getContext("2d");
     if (ctx) {
         confidenceChart = new Chart(ctx, {
-        type: "line",
-        data: {
-            labels: [],
-            datasets: [{
-                label: "Confidence (%)",
-                borderColor: "blue",
-                backgroundColor: "rgba(0, 123, 255, 0.2)",
-                data: [],
-                fill: true,
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100
+            type: "line",
+            data: {
+                labels: [],
+                datasets: [{
+                    label: "Confidence (%)",
+                    borderColor: "blue",
+                    backgroundColor: "rgba(0, 123, 255, 0.2)",
+                    data: [],
+                    fill: true,
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
                 }
             }
-        }
-    });
+        });
     }
 
     // Initialize with upload mode
@@ -52,10 +59,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const fps = parseInt(document.getElementById('desiredFPS').value, 10);
             if (isNaN(fps) || fps < 1) {
                 alert('Please enter a valid FPS (>=1)');
-            return;
-        }
+                return;
+            }
             fetch('/set_fps', {
-            method: 'POST',
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ fps })
             })
@@ -70,8 +77,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             })
             .catch(err => {
-                alert('Failed to set FPS');
-                console.error(err);
+                console.error('Failed to set FPS:', err);
+                alert('Failed to set FPS. Please try again.');
             });
         });
     }
@@ -87,41 +94,41 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupSocketHandlers() {
     socket.on('connect', () => {
         console.log('Connected to server');
-        document.getElementById('uploadStatus').innerText = 'Connected to server';
+        updateStatus('Connected to server', 'success');
     });
 
     socket.on('disconnect', () => {
         console.log('Disconnected from server');
-        document.getElementById('uploadStatus').innerText = 'Disconnected from server';
+        updateStatus('Disconnected from server', 'error');
     });
 
     socket.on('connect_error', (error) => {
         console.error('Connection error:', error);
-        document.getElementById('uploadStatus').innerText = 'Connection error. Retrying...';
+        updateStatus('Connection error. Retrying...', 'error');
     });
 
     socket.on('reconnect_attempt', (attemptNumber) => {
         console.log('Reconnection attempt:', attemptNumber);
-        document.getElementById('uploadStatus').innerText = `Reconnecting... Attempt ${attemptNumber}`;
+        updateStatus(`Reconnecting... Attempt ${attemptNumber}`, 'warning');
     });
 
     socket.on('reconnect', (attemptNumber) => {
         console.log('Reconnected after', attemptNumber, 'attempts');
-        document.getElementById('uploadStatus').innerText = 'Reconnected to server';
+        updateStatus('Reconnected to server', 'success');
     });
 
     socket.on('reconnect_error', (error) => {
         console.error('Reconnection error:', error);
-        document.getElementById('uploadStatus').innerText = 'Reconnection failed';
+        updateStatus('Reconnection failed', 'error');
     });
 
     socket.on('reconnect_failed', () => {
         console.error('Failed to reconnect');
-        document.getElementById('uploadStatus').innerText = 'Failed to reconnect to server';
+        updateStatus('Failed to reconnect to server', 'error');
     });
 
     socket.on("log_update", data => {
-const detectionLog = document.getElementById("detectionLog");
+        const detectionLog = document.getElementById("detectionLog");
         if (detectionLog) {
             const p = document.createElement("p");
             p.innerText = data.message;
@@ -137,6 +144,15 @@ const detectionLog = document.getElementById("detectionLog");
             confidenceChart.update();
         }
     });
+}
+
+// Helper function to update status messages
+function updateStatus(message, type = 'info') {
+    const statusElement = document.getElementById('uploadStatus');
+    if (statusElement) {
+        statusElement.innerText = message;
+        statusElement.className = `status-message ${type}`;
+    }
 }
 
 // FPS Monitoring
