@@ -9,3 +9,4 @@ keepalive = 2
 max_requests = 1000
 max_requests_jitter = 100
 preload_app = True
+wsgi_module = "app:application"

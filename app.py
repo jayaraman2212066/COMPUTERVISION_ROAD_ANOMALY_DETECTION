@@ -249,6 +249,18 @@ def set_fps():
         logger.error(f"Error setting FPS: {e}")
         return jsonify({'error': str(e)}), 400
 
+@app.route('/start_arduino', methods=['POST'])
+def start_arduino():
+    try:
+        # Arduino integration placeholder
+        return jsonify({'success': False, 'message': 'Arduino not connected in deployment'})
+    except Exception as e:
+        logger.error(f"Arduino error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# WSGI application for Gunicorn
+application = socketio
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 9000))
     socketio.run(app, host='0.0.0.0', port=port, debug=False)
