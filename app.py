@@ -79,14 +79,17 @@ def process_frames():
                 frame_rgb = cv2.cvtColor(resized_frame, cv2.COLOR_BGR2RGB)
 
                 # Optimized YOLOv8 inference
-                results = model_yolo.predict(
-                    source=frame_rgb,
-                    imgsz=416,
-                    conf=0.3,
-                    device='cpu',
-                    verbose=False,
-                    half=True
-                )
+                if model_yolo is not None:
+                    results = model_yolo.predict(
+                        source=frame_rgb,
+                        imgsz=416,
+                        conf=0.3,
+                        device='cpu',
+                        verbose=False,
+                        half=True
+                    )
+                else:
+                    results = [None]
 
                 processed_queue.put((resized_frame, results[0]))
             time.sleep(0.001)
@@ -141,7 +144,7 @@ def generate_frames(video_path):
             if not processed_queue.empty():
                 resized_frame, results = processed_queue.get()
                 annotated_frame = resized_frame.copy()
-                detections = results.boxes
+                detections = results.boxes if results is not None else None
 
                 if detections is not None:
                     for det in detections:
