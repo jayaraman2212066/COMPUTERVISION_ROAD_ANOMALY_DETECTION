@@ -305,12 +305,17 @@ function captureFromArduino() {
 
 // Dynamic Background Management
 function setupDynamicBackground() {
-    // Auto-switch backgrounds every 15 seconds
+    const backgrounds = ['upload', 'arduino', 'analytics', 'default'];
+    let currentBgIndex = 0;
+    
+    // Auto-cycle through all backgrounds every minute (60 seconds)
     setInterval(() => {
-        if (!document.querySelector('.dashboard-section.active-section')) {
-            switchBackground('default');
-        }
-    }, 15000);
+        switchBackground(backgrounds[currentBgIndex]);
+        currentBgIndex = (currentBgIndex + 1) % backgrounds.length;
+    }, 60000);
+    
+    // Initialize with first background
+    switchBackground(backgrounds[0]);
 }
 
 function switchBackground(type) {
