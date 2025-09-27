@@ -59,6 +59,7 @@ frame_queue = Queue(maxsize=30)
 processed_queue = Queue(maxsize=30)
 
 desired_fps = 30  # Default FPS
+fps_lock = threading.Lock()  # Thread safety for FPS variable
 
 def emit_socket_event(event, data):
     try:
@@ -243,7 +244,8 @@ def set_fps():
     try:
         data = request.get_json()
         global desired_fps
-        desired_fps = int(data.get('fps', 30))
+        with fps_lock:
+            desired_fps = int(data.get('fps', 30))
         return jsonify({'message': f'FPS set to {desired_fps}'})
     except Exception as e:
         logger.error(f"Error setting FPS: {e}")

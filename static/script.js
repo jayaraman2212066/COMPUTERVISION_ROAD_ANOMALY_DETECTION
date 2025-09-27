@@ -56,9 +56,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const setFPSBtn = document.getElementById('setFPSBtn');
     if (setFPSBtn) {
         setFPSBtn.addEventListener('click', () => {
-            const fps = parseInt(document.getElementById('desiredFPS').value, 10);
+            const fpsElement = document.getElementById('desiredFPS');
+            if (!fpsElement) {
+                console.error('FPS input element not found');
+                return;
+            }
+            const fps = parseInt(fpsElement.value, 10);
             if (isNaN(fps) || fps < 1) {
-                alert('Please enter a valid FPS (>=1)');
+                updateStatus('Please enter a valid FPS (>=1)', 'error');
                 return;
             }
             fetch('/set_fps', {
@@ -195,6 +200,12 @@ function setVideoMode(mode) {
     const uploadSection = document.getElementById('upload-section');
     const arduinoSection = document.getElementById('arduino-section');
 
+    // Null checks for safety
+    if (!uploadBtn || !arduinoBtn || !uploadSection || !arduinoSection) {
+        console.error('Required elements not found for setVideoMode');
+        return;
+    }
+
     // Reset all buttons
     uploadBtn.classList.remove('active');
     arduinoBtn.classList.remove('active');
@@ -233,7 +244,7 @@ function uploadVideo() {
 
     const file = input.files[0];
     if (!file) {
-        alert("Please select a video file first.");
+        updateStatus('Please select a video file first.', 'warning');
         return;
     }
 
