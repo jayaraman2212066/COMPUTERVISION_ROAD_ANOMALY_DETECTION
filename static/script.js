@@ -89,7 +89,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Set up socket event handlers
     setupSocketHandlers();
 
-    // Dynamic background is now handled by CSS animations
+    // Dynamic background switching
+    setupDynamicBackground();
+    
+    // Add click handlers for navigation
+    document.querySelectorAll('.sidebar nav ul li a').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const href = link.getAttribute('href');
+            switchToSection(href.replace('#', ''));
+        });
+    });
 });
 
 // Socket event handlers setup
@@ -293,6 +303,66 @@ function captureFromArduino() {
     });
 }
 
+// Dynamic Background Management
+function setupDynamicBackground() {
+    // Auto-switch backgrounds every 15 seconds
+    setInterval(() => {
+        if (!document.querySelector('.dashboard-section.active-section')) {
+            switchBackground('default');
+        }
+    }, 15000);
+}
+
+function switchBackground(type) {
+    const backgrounds = document.querySelectorAll('.bg-image');
+    backgrounds.forEach(bg => bg.classList.remove('active'));
+    
+    const targetBg = document.getElementById(type + 'Bg') || document.getElementById('defaultBg');
+    if (targetBg) {
+        targetBg.classList.add('active');
+    }
+}
+
+function switchToSection(sectionId) {
+    // Remove active class from all sections
+    document.querySelectorAll('.dashboard-section').forEach(section => {
+        section.classList.remove('active-section');
+    });
+    
+    // Remove active class from all nav items
+    document.querySelectorAll('.sidebar nav ul li').forEach(li => {
+        li.classList.remove('active');
+    });
+    
+    // Add active class to target section
+    const targetSection = document.getElementById(sectionId);
+    if (targetSection) {
+        targetSection.classList.add('active-section');
+        
+        // Add active class to corresponding nav item
+        const navLink = document.querySelector(`a[href="#${sectionId}"]`);
+        if (navLink) {
+            navLink.parentElement.classList.add('active');
+        }
+        
+        // Switch background based on section
+        switch(sectionId) {
+            case 'upload-section':
+                switchBackground('upload');
+                break;
+            case 'arduino-section':
+                switchBackground('arduino');
+                break;
+            case 'analytics-section':
+                switchBackground('analytics');
+                break;
+            default:
+                switchBackground('default');
+        }
+    }
+}
+
 // Make functions globally accessible
 window.uploadVideo = uploadVideo;
-window.captureFromArduino = captureFromArduino; 
+window.captureFromArduino = captureFromArduino;
+window.switchToSection = switchToSection; 
