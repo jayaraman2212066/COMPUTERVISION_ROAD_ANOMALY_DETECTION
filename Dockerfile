@@ -7,16 +7,11 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     libsm6 \
     libxext6 \
-    libxrender-dev \
+    libxrender1 \
     libgomp1 \
     libgl1 \
-    libglib2.0-0 \
     ffmpeg \
-    libsm6 \
-    libxext6 \
     libfontconfig1 \
-    libxrender1 \
-    libgl1-mesa-glx \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
