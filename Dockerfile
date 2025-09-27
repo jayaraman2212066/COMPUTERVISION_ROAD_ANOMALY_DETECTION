@@ -9,8 +9,14 @@ RUN apt-get update && apt-get install -y \
     libxext6 \
     libxrender-dev \
     libgomp1 \
-    libgl1-mesa-dri \
-    libgthread-2.0-0 \
+    libgl1 \
+    libglib2.0-0 \
+    ffmpeg \
+    libsm6 \
+    libxext6 \
+    libfontconfig1 \
+    libxrender1 \
+    libgl1-mesa-glx \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
@@ -25,6 +31,11 @@ COPY . .
 
 # Create uploads directory
 RUN mkdir -p static/uploads
+
+# Set environment variables for headless operation
+ENV DISPLAY=:99
+ENV QT_QPA_PLATFORM=offscreen
+ENV OPENCV_IO_ENABLE_OPENEXR=1
 
 EXPOSE 10000
 
