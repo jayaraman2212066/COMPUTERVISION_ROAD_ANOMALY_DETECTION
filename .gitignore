@@ -34,7 +34,8 @@ ENV/
 # Project specific
 static/uploads/*
 !static/uploads/.gitkeep
-*.pt
+# Allow model weights for deployment
+!yolov8n_speedbump_optimized42/weights/best.pt
 *.pth
 *.weights
 *.onnx

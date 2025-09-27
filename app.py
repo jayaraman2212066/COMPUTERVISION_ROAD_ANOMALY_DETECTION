@@ -40,9 +40,11 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 try:
     model_path = 'yolov8n_speedbump_optimized42/weights/best.pt'
     if not os.path.exists(model_path):
-        raise FileNotFoundError(f"Model file not found at {model_path}")
+        logger.warning(f"Custom model not found at {model_path}, using YOLOv8n")
+        model_yolo = YOLO('yolov8n.pt')  # Fallback to default YOLOv8n
+    else:
+        model_yolo = YOLO(model_path)
     
-    model_yolo = YOLO(model_path)
     model_yolo.fuse()  # Fuse Conv2d + BatchNorm2d layers
     torch.set_num_threads(4)  # Limit CPU threads for better performance
     logger.info("Model loaded successfully")
@@ -245,5 +247,5 @@ def set_fps():
         return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
-    # Removed socketio.run as Gunicorn is used for deployment
-    pass
+    port = int(os.environ.get('PORT', 9000))
+    socketio.run(app, host='0.0.0.0', port=port, debug=False)
