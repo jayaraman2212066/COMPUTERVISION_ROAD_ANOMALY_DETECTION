@@ -5,7 +5,7 @@ services:
     region: oregon
     plan: starter
     buildCommand: |
-      apt-get update && apt-get install -y libgl1-mesa-glx libgthread-2.0-0
+      apt-get update && apt-get install -y libgl1-mesa-dri libgthread-2.0-0
       pip install -r requirements.txt
     startCommand: gunicorn -c gunicorn.conf.py app:app
     envVars:
