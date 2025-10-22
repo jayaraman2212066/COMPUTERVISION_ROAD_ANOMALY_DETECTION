@@ -30,12 +30,16 @@
         <div class="bg-image arduino-bg" id="arduinoBg"></div>
         <div class="bg-image analytics-bg" id="analyticsBg"></div>
     </div>
+    
+    <!-- Floating Elements for Enhanced Visual Appeal -->
+    <div class="floating-elements"></div>
 
     <div class="dashboard">
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="logo">
-                <h2>RoadGuard</h2>
+                <h2 class="text-glow">RoadGuard AI</h2>
+                <p style="font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 5px;">Intelligent Road Monitoring</p>
             </div>
             <nav>
                 <ul>
@@ -51,28 +55,33 @@
             <header>
                 <h1>Road Anomaly Detection Dashboard</h1>
                 <div class="header-stats">
-                    <div class="stat-card">
+                    <div class="stat-card pulse-glow">
                         <span class="stat-value" id="totalDetections">0</span>
                         <span class="stat-label">Total Detections</span>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card pulse-glow">
                         <span class="stat-value" id="currentFPS">0</span>
                         <span class="stat-label">Current FPS</span>
+                    </div>
+                    <div class="stat-card pulse-glow">
+                        <span class="stat-value" id="systemStatus">🟢</span>
+                        <span class="stat-label">System Status</span>
                     </div>
                 </div>
             </header>
 
             <!-- Upload Section -->
-            <section id="upload-section" class="dashboard-section">
+            <section id="upload-section" class="dashboard-section animated-border">
                 <div class="section-header">
                     <h2>📦 Video Upload & Detection</h2>
                     <div class="upload-controls">
                         <input type="file" id="videoInput" accept="video/*" class="file-input">
-                        <button id="uploadBtn" class="primary-button">Upload & Detect</button>
+                        <button id="uploadBtn" class="primary-button">🚀 Upload & Detect</button>
                     </div>
                     <div class="fps-controls" style="margin-top:10px;">
-                        <input type="number" id="desiredFPS" min="1" max="60" value="30" style="width: 60px;">
-                        <button id="setFPSBtn" class="primary-button">Set FPS</button>
+                        <label style="color: rgba(255,255,255,0.8); margin-right: 10px;">Target FPS:</label>
+                        <input type="number" id="desiredFPS" min="1" max="60" value="30" style="width: 70px; padding: 8px; border-radius: 5px; border: 1px solid rgba(59,130,246,0.3); background: rgba(30,58,138,0.2); color: white;">
+                        <button id="setFPSBtn" class="primary-button">⚡ Set FPS</button>
                     </div>
                 </div>
                 <div class="video-grid">
@@ -93,12 +102,15 @@
             </section>
 
             <!-- Arduino Section -->
-            <section id="arduino-section" class="dashboard-section">
+            <section id="arduino-section" class="dashboard-section animated-border">
                 <div class="section-header">
                     <h2>📷 Arduino Real-Time Detection</h2>
                     <button id="arduinoBtn" class="primary-button">
-                        Start Arduino Feed
+                        🎥 Start Arduino Feed
                     </button>
+                    <div style="margin-top: 10px; font-size: 14px; color: rgba(255,255,255,0.7);">
+                        <span>📡 Real-time processing with live camera feed</span>
+                    </div>
                 </div>
                 <div class="arduino-grid">
                     <div class="video-card">
@@ -118,7 +130,7 @@
             </section>
 
             <!-- Analytics Section -->
-            <section id="analytics-section" class="dashboard-section">
+            <section id="analytics-section" class="dashboard-section animated-border">
                 <div class="section-header">
                     <h2>📊 Detection Analytics</h2>
                 </div>
