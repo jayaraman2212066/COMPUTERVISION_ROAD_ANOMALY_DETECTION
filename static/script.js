@@ -99,17 +99,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Set up socket event handlers
     setupSocketHandlers();
 
-    // Dynamic background switching
-    setupDynamicBackground();
-    
     // Add click handlers for navigation
     document.querySelectorAll('.sidebar nav ul li a').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             const href = link.getAttribute('href');
-            switchToSection(href.replace('#', ''));
+            if (href) {
+                switchToSection(href.replace('#', ''));
+            }
         });
     });
+    
+    // Initialize first section as active
+    switchToSection('upload-section');
 });
 
 // Socket event handlers setup
@@ -319,122 +321,14 @@ function captureFromArduino() {
     });
 }
 
-// Dynamic Background Management with Enhanced Effects
-function setupDynamicBackground() {
-    const backgrounds = ['upload', 'arduino', 'analytics', 'default'];
-    let currentBgIndex = 0;
-    
-    // Auto-cycle through all backgrounds every minute (60 seconds)
-    setInterval(() => {
-        switchBackground(backgrounds[currentBgIndex]);
-        currentBgIndex = (currentBgIndex + 1) % backgrounds.length;
-    }, 60000);
-    
-    // Initialize with first background
-    switchBackground(backgrounds[0]);
-    
-    // Add floating particles effect
-    createFloatingParticles();
-    
-    // Add dynamic glow effects
-    addDynamicGlowEffects();
-}
 
-// Create floating particles for enhanced visual appeal
-function createFloatingParticles() {
-    const particleContainer = document.createElement('div');
-    particleContainer.className = 'particle-container';
-    particleContainer.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: -2;
-        overflow: hidden;
-    `;
-    
-    // Create 20 floating particles
-    for (let i = 0; i < 20; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'floating-particle';
-        particle.style.cssText = `
-            position: absolute;
-            width: ${Math.random() * 4 + 2}px;
-            height: ${Math.random() * 4 + 2}px;
-            background: rgba(59, 130, 246, ${Math.random() * 0.3 + 0.1});
-            border-radius: 50%;
-            left: ${Math.random() * 100}%;
-            top: ${Math.random() * 100}%;
-            animation: floatParticle ${Math.random() * 20 + 15}s linear infinite;
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
-        `;
-        particleContainer.appendChild(particle);
-    }
-    
-    document.body.appendChild(particleContainer);
-    
-    // Add CSS animation for particles
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes floatParticle {
-            0% {
-                transform: translateY(100vh) translateX(0px) rotate(0deg);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100px) translateX(${Math.random() * 200 - 100}px) rotate(360deg);
-                opacity: 0;
-            }
-        }
-    `;
-    document.head.appendChild(style);
-}
-
-// Add dynamic glow effects to interactive elements
-function addDynamicGlowEffects() {
-    // Add hover glow to buttons
-    document.querySelectorAll('.primary-button').forEach(button => {
-        button.addEventListener('mouseenter', () => {
-            button.style.boxShadow = '0 0 30px rgba(59, 130, 246, 0.8), 0 0 60px rgba(59, 130, 246, 0.4)';
-        });
-        
-        button.addEventListener('mouseleave', () => {
-            button.style.boxShadow = '';
-        });
-    });
-    
-    // Add pulse effect to active elements
-    setInterval(() => {
-        document.querySelectorAll('.stat-value').forEach(stat => {
-            stat.style.transform = 'scale(1.05)';
-            setTimeout(() => {
-                stat.style.transform = 'scale(1)';
-            }, 200);
-        });
-    }, 3000);
-}
-
-function switchBackground(type) {
-    const backgrounds = document.querySelectorAll('.bg-image');
-    backgrounds.forEach(bg => bg.classList.remove('active'));
-    
-    const targetBg = document.getElementById(type + 'Bg') || document.getElementById('defaultBg');
-    if (targetBg) {
-        targetBg.classList.add('active');
-    }
-}
 
 function switchToSection(sectionId) {
-    // Remove active class from all sections
+    console.log('Switching to section:', sectionId);
+    
+    // Hide all sections
     document.querySelectorAll('.dashboard-section').forEach(section => {
+        section.style.display = 'none';
         section.classList.remove('active-section');
     });
     
@@ -443,9 +337,10 @@ function switchToSection(sectionId) {
         li.classList.remove('active');
     });
     
-    // Add active class to target section
+    // Show target section
     const targetSection = document.getElementById(sectionId);
     if (targetSection) {
+        targetSection.style.display = 'block';
         targetSection.classList.add('active-section');
         
         // Add active class to corresponding nav item
@@ -454,74 +349,13 @@ function switchToSection(sectionId) {
             navLink.parentElement.classList.add('active');
         }
         
-        // Switch background based on section
-        switch(sectionId) {
-            case 'upload-section':
-                switchBackground('upload');
-                break;
-            case 'arduino-section':
-                switchBackground('arduino');
-                break;
-            case 'analytics-section':
-                switchBackground('analytics');
-                break;
-            default:
-                switchBackground('default');
-        }
+        console.log('Section switched successfully to:', sectionId);
+    } else {
+        console.error('Section not found:', sectionId);
     }
 }
 
-// Enhanced visual feedback for user interactions
-function addInteractionFeedback() {
-    // Add ripple effect to buttons
-    document.querySelectorAll('.primary-button').forEach(button => {
-        button.addEventListener('click', function(e) {
-            const ripple = document.createElement('span');
-            const rect = this.getBoundingClientRect();
-            const size = Math.max(rect.width, rect.height);
-            const x = e.clientX - rect.left - size / 2;
-            const y = e.clientY - rect.top - size / 2;
-            
-            ripple.style.cssText = `
-                position: absolute;
-                width: ${size}px;
-                height: ${size}px;
-                left: ${x}px;
-                top: ${y}px;
-                background: rgba(255, 255, 255, 0.3);
-                border-radius: 50%;
-                transform: scale(0);
-                animation: ripple 0.6s linear;
-                pointer-events: none;
-            `;
-            
-            this.style.position = 'relative';
-            this.style.overflow = 'hidden';
-            this.appendChild(ripple);
-            
-            setTimeout(() => {
-                ripple.remove();
-            }, 600);
-        });
-    });
-    
-    // Add CSS for ripple animation
-    const rippleStyle = document.createElement('style');
-    rippleStyle.textContent = `
-        @keyframes ripple {
-            to {
-                transform: scale(2);
-                opacity: 0;
-            }
-        }
-    `;
-    document.head.appendChild(rippleStyle);
-}
 
-// Initialize interaction feedback when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(addInteractionFeedback, 1000);
-});
 
 // Make functions globally accessible
 window.uploadVideo = uploadVideo;
